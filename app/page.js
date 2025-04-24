@@ -1,52 +1,64 @@
 'use client'
-import { Box, Button, Stack, TextField, InputAdornment, IconButton, Fade } from '@mui/material'
+
+import { Box, Button, Stack, TextField, InputAdornment, IconButton, Fade, Typography } from '@mui/material'
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
-import Image from 'next/image'
 import { useState } from 'react'
+import TypingAnimation from './components/TypingAnimation'
 
 export default function Home() {
   // Initialize chat messages with a welcome message from the AI
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
-      content: `Peace be upon you. I'm Sahabi, your AI assistant. How can I help you today?`
+      content: `Peace be upon you. I'm Sahabi, your AI assistant. What's up?`
     }
   ])
 
-  // State to manage the current message input
+  // State to manage the current message input and loading state
   const [message, setMessage] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
 
   // Function to handle sending messages and receiving streaming responses
   const sendMessage = async () => {
-    // Clear the input field
-    setMessage('')
+    if (!message.trim()) return;
 
-    // Add the user's message and prepare for AI response
+    // Clear the input field and set loading state
+    setMessage('')
+    setIsLoading(true)
+
+    // Add the user's message
     setMessages((messages) => [
       ...messages,
-      { role: 'user', content: message },
-      { role: 'assistant', content: '' }  // Empty placeholder for streaming response
+      { role: 'user', content: message }
     ])
 
     // Send the chat history to the API and handle streaming response
-    const response = fetch('/api/chat', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify([...messages, { role: 'user', content: message }]),
-    }).then(async (res) => {
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify([...messages, { role: 'user', content: message }]),
+      })
+
       // Set up streaming response handling
-      const reader = res.body.getReader()
+      const reader = response.body.getReader()
       const decoder = new TextDecoder()
 
+      // Add an empty assistant message that we'll populate with the stream
+      setMessages((messages) => [
+        ...messages,
+        { role: 'assistant', content: '' }
+      ])
+
       let result = ''
-      return reader.read().then(function processText({ done, value }) {
-        if (done) {
-          return result
-        }
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
         // Decode the incoming stream
-        const text = decoder.decode(value || new Int8Array(), { stream: true })
+        const text = decoder.decode(value, { stream: true })
 
         // Update the AI's response message incrementally as chunks arrive
         setMessages((messages) => {
@@ -60,9 +72,16 @@ export default function Home() {
             },
           ]
         })
-        return reader.read().then(processText)
-      })
-    })
+      }
+    } catch (error) {
+      console.error('Error:', error)
+      setMessages((messages) => [
+        ...messages,
+        { role: 'assistant', content: 'Sorry, I encountered an error. Please try again.' }
+      ])
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -110,6 +129,27 @@ export default function Home() {
               </Box>
             </Box>
           ))}
+          {/* Show typing animation when loading */}
+          {isLoading && (
+            <Box
+              display="flex"
+              justifyContent="flex-start"
+            >
+              <Box
+                bgcolor="#E9E9EB"
+                borderRadius={16}
+                sx={{
+                  minWidth: 60,
+                  minHeight: 35,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                <TypingAnimation />
+              </Box>
+            </Box>
+          )}
         </Stack>
 
         {/* Message input area */}
