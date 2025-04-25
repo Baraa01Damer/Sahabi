@@ -2,6 +2,7 @@
 
 import { Box, Button, Stack, TextField, InputAdornment, IconButton, Fade, Typography } from '@mui/material'
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
+import MicIcon from '@mui/icons-material/Mic'
 import { useState, useEffect, useRef } from 'react'
 import TypingAnimation from './components/TypingAnimation'
 import TypedMessage from './components/TypedMessage'
@@ -216,28 +217,36 @@ export default function Home() {
             fullWidth
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            // Handle Enter key press to send message
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 sendMessage();
               }
             }}
-            // Custom styling for the input field and send button
             InputProps={{
               endAdornment: (
-                <InputAdornment position="end">
-                  {/* Fade in/out send button based on message content */}
+                <InputAdornment position="end" sx={{ mr: 0.5 }}>
+                  <IconButton
+                    sx={{
+                      color: '#458AF7',
+                      padding: '8px',
+                      '&:hover': {
+                        bgcolor: 'rgba(69, 138, 247, 0.1)'
+                      }
+                    }}
+                  >
+                    <MicIcon />
+                  </IconButton>
                   <Fade in={message.length > 0}>
                     <IconButton
                       onClick={sendMessage}
                       sx={{
                         bgcolor: '#458AF7',
                         color: 'white',
+                        padding: '8px',
                         '&:hover': {
                           bgcolor: '#3573d9'
-                        },
-                        visibility: message.length > 0 ? 'visible' : 'hidden'
+                        }
                       }}
                     >
                       <ArrowUpwardIcon />
@@ -247,9 +256,11 @@ export default function Home() {
               ),
               sx: {
                 borderRadius: '25px',
+                '& .MuiOutlinedInput-root': {
+                  paddingRight: '8px'
+                }
               }
             }}
-            // Custom styling for the TextField component
             sx={{
               '& .MuiInputBase-input::placeholder': {
                 color: '#C4C4C6'
