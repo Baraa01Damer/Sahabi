@@ -2,10 +2,13 @@
 
 import { Box, Button, Stack, TextField, InputAdornment, IconButton, Fade, Typography } from '@mui/material'
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import TypingAnimation from './components/TypingAnimation'
+import TypedMessage from './components/TypedMessage'
 
 export default function Home() {
+  const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
   // Initialize chat messages with a welcome message from the AI
   const [messages, setMessages] = useState([
     {
@@ -17,6 +20,22 @@ export default function Home() {
   // State to manage the current message input and loading state
   const [message, setMessage] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+
+  // Add auto-scroll effect
+  useEffect(() => {
+    const scrollToBottom = () => {
+      if (messagesContainerRef.current) {
+        const container = messagesContainerRef.current;
+        const scrollHeight = container.scrollHeight;
+        const height = container.clientHeight;
+        const maxScrollTop = scrollHeight - height;
+        container.scrollTop = maxScrollTop > 0 ? maxScrollTop : 0;
+      }
+    };
+
+    // Use requestAnimationFrame to ensure smooth scrolling
+    requestAnimationFrame(scrollToBottom);
+  }, [messages, isLoading]);
 
   // Function to handle sending messages and receiving streaming responses
   const sendMessage = async () => {
@@ -106,11 +125,28 @@ export default function Home() {
       >
         {/* Messages display area with scrolling */}
         <Stack
+          ref={messagesContainerRef}
           direction="column"
           spacing={2}
           flexGrow={1}
           overflow="auto"
           maxHeight="100%"
+          sx={{
+            '&::-webkit-scrollbar': {
+              width: '8px',
+            },
+            '&::-webkit-scrollbar-track': {
+              background: '#f1f1f1',
+              borderRadius: '4px',
+            },
+            '&::-webkit-scrollbar-thumb': {
+              background: '#888',
+              borderRadius: '4px',
+            },
+            '&::-webkit-scrollbar-thumb:hover': {
+              background: '#555',
+            },
+          }}
         >
           {/* Render each message with different styling based on sender */}
           {messages.map((message, index) => (
@@ -125,7 +161,27 @@ export default function Home() {
                 borderRadius={16}
                 padding={3}
               >
-                {message.content}
+                {message.role === 'assistant' ? (
+                  <TypedMessage
+                    message={message.content}
+                    onComplete={() => {
+                      if (index === messages.length - 1) {
+                        setIsLoading(false);
+                      }
+                    }}
+                    onUpdate={() => {
+                      if (messagesContainerRef.current) {
+                        const container = messagesContainerRef.current;
+                        const scrollHeight = container.scrollHeight;
+                        const height = container.clientHeight;
+                        const maxScrollTop = scrollHeight - height;
+                        container.scrollTop = maxScrollTop > 0 ? maxScrollTop : 0;
+                      }
+                    }}
+                  />
+                ) : (
+                  message.content
+                )}
               </Box>
             </Box>
           ))}
@@ -150,6 +206,7 @@ export default function Home() {
               </Box>
             </Box>
           )}
+          <div ref={messagesEndRef} />
         </Stack>
 
         {/* Message input area */}
