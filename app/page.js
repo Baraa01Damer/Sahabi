@@ -6,6 +6,7 @@ import MicIcon from '@mui/icons-material/Mic'
 import { useState, useEffect, useRef } from 'react'
 import TypingAnimation from './components/TypingAnimation'
 import TypedMessage from './components/TypedMessage'
+import LogoSection from './components/LogoSection'
 
 export default function Home() {
   const messagesEndRef = useRef(null);
@@ -164,6 +165,7 @@ export default function Home() {
       alignItems="center"
       p={2}
     >
+      <LogoSection />
       {/* Chat window container */}
       <Stack
         direction="column"
