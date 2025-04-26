@@ -18,6 +18,7 @@ const GitHubLink = () => {
                 '&:hover': {
                     bgcolor: '#2f363d', // Slightly change color to lighter on hover
                 },
+                display: { xs: 'none', sm: 'flex' }, // Hide on mobile, show on small screens and up
             }}
             size="large"
             aria-label="View source on GitHub"

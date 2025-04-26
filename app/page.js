@@ -156,18 +156,19 @@ export default function Home() {
   return (
     // Main container for the chat interface
     <Box
-      width="100vw"
+      width="100%"
       height="100vh"
       display="flex"
       flexDirection="column"
       justifyContent="center"
       alignItems="center"
+      p={2}
     >
       {/* Chat window container */}
       <Stack
         direction="column"
-        width="600px"
-        height="700px"
+        width={{ xs: '100%', sm: '90%', md: '600px' }}
+        height={{ xs: '100%', sm: '700px' }}
         border="1px solid black"
         borderRadius={2}
         padding={2}
@@ -209,7 +210,8 @@ export default function Home() {
                 bgcolor={message.role === 'assistant' ? '#E9E9EB' : '#458AF7'}
                 color={message.role === 'assistant' ? 'black' : 'white'}
                 borderRadius={16}
-                padding={3}
+                padding={{ xs: 2, sm: 3 }}
+                maxWidth={{ xs: '85%', sm: '70%' }}
               >
                 {message.role === 'assistant' ? (
                   <TypedMessage
@@ -249,83 +251,51 @@ export default function Home() {
                   minHeight: 35,
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center'
+                  justifyContent: 'center',
+                  padding: { xs: 1, sm: 2 },
                 }}
               >
                 <TypingAnimation />
               </Box>
             </Box>
           )}
-          <div ref={messagesEndRef} />
         </Stack>
 
-        {/* Message input area */}
-        <Stack direction="row" spacing={2}>
+        {/* Input area */}
+        <Stack direction="row" spacing={1}>
           <TextField
-            placeholder="Message"
             fullWidth
+            variant="outlined"
+            placeholder="Type your message..."
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            onKeyDown={(e) => {
+            onKeyPress={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 sendMessage();
               }
             }}
+            multiline
+            maxRows={4}
             InputProps={{
               endAdornment: (
-                <InputAdornment position="end" sx={{ mr: 0.5 }}>
+                <InputAdornment position="end">
                   <IconButton
                     onClick={handleMicClick}
-                    sx={{
-                      color: isListening ? '#ff4444' : '#458AF7',
-                      padding: '8px',
-                      '&:hover': {
-                        bgcolor: isListening ? 'rgba(255, 68, 68, 0.1)' : 'rgba(69, 138, 247, 0.1)'
-                      }
-                    }}
+                    color={isListening ? 'error' : 'default'}
+                    sx={{ mr: 1 }}
                   >
                     <MicIcon />
                   </IconButton>
                   <IconButton
                     onClick={sendMessage}
-                    sx={{
-                      bgcolor: '#458AF7',
-                      color: 'white',
-                      padding: '8px',
-                      '&:hover': {
-                        bgcolor: '#3573d9'
-                      }
-                    }}
+                    disabled={!message.trim() || isLoading}
+                    color="primary"
                   >
                     <ArrowUpwardIcon />
                   </IconButton>
                 </InputAdornment>
               ),
-              sx: {
-                borderRadius: '25px',
-                '& .MuiOutlinedInput-root': {
-                  paddingRight: '8px'
-                }
-              }
-            }}
-            sx={{
-              '& .MuiInputBase-input::placeholder': {
-                color: '#C4C4C6'
-              },
-              '& .MuiOutlinedInput-root': {
-                borderRadius: '25px',
-                '& fieldset': {
-                  borderColor: '#DFDFDF',
-                  borderRadius: '25px',
-                },
-                '&:hover fieldset': {
-                  borderColor: '#DFDFDF'
-                },
-                '&.Mui-focused fieldset': {
-                  borderColor: '#DFDFDF'
-                }
-              }
             }}
           />
         </Stack>
