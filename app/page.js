@@ -21,6 +21,55 @@ export default function Home() {
   // State to manage the current message input and loading state
   const [message, setMessage] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [isListening, setIsListening] = useState(false)
+  const [recognition, setRecognition] = useState(null)
+
+  // Initialize speech recognition on client side only
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        const recognitionInstance = new SpeechRecognition();
+        recognitionInstance.continuous = false;
+        recognitionInstance.interimResults = false;
+        recognitionInstance.lang = 'en-US';
+
+        recognitionInstance.onresult = (event) => {
+          const transcript = event.results[0][0].transcript;
+          // Capitalize the first word of the transcript
+          const capitalizedTranscript = transcript.charAt(0).toUpperCase() + transcript.slice(1);
+          setMessage((prevMessage) => prevMessage + capitalizedTranscript);
+          setIsListening(false);
+        };
+
+        recognitionInstance.onerror = (event) => {
+          console.error('Speech recognition error:', event.error);
+          setIsListening(false);
+        };
+
+        recognitionInstance.onend = () => {
+          setIsListening(false);
+        };
+
+        setRecognition(recognitionInstance);
+      }
+    }
+  }, []);
+
+  const handleMicClick = () => {
+    if (!recognition) {
+      alert('Speech recognition is not supported in your browser.');
+      return;
+    }
+
+    if (!isListening) {
+      recognition.start();
+      setIsListening(true);
+    } else {
+      recognition.stop();
+      setIsListening(false);
+    }
+  };
 
   // Add auto-scroll effect
   useEffect(() => {
@@ -227,31 +276,30 @@ export default function Home() {
               endAdornment: (
                 <InputAdornment position="end" sx={{ mr: 0.5 }}>
                   <IconButton
+                    onClick={handleMicClick}
                     sx={{
-                      color: '#458AF7',
+                      color: isListening ? '#ff4444' : '#458AF7',
                       padding: '8px',
                       '&:hover': {
-                        bgcolor: 'rgba(69, 138, 247, 0.1)'
+                        bgcolor: isListening ? 'rgba(255, 68, 68, 0.1)' : 'rgba(69, 138, 247, 0.1)'
                       }
                     }}
                   >
                     <MicIcon />
                   </IconButton>
-                  <Fade in={message.length > 0}>
-                    <IconButton
-                      onClick={sendMessage}
-                      sx={{
-                        bgcolor: '#458AF7',
-                        color: 'white',
-                        padding: '8px',
-                        '&:hover': {
-                          bgcolor: '#3573d9'
-                        }
-                      }}
-                    >
-                      <ArrowUpwardIcon />
-                    </IconButton>
-                  </Fade>
+                  <IconButton
+                    onClick={sendMessage}
+                    sx={{
+                      bgcolor: '#458AF7',
+                      color: 'white',
+                      padding: '8px',
+                      '&:hover': {
+                        bgcolor: '#3573d9'
+                      }
+                    }}
+                  >
+                    <ArrowUpwardIcon />
+                  </IconButton>
                 </InputAdornment>
               ),
               sx: {
