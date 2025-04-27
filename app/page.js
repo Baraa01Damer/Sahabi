@@ -1,16 +1,18 @@
 'use client'
 
-import { Box, Button, Stack, TextField, InputAdornment, IconButton, Fade, Typography } from '@mui/material'
+import { Box, Button, Stack, TextField, InputAdornment, IconButton, Fade, Typography, Avatar } from '@mui/material'
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
 import MicIcon from '@mui/icons-material/Mic'
 import { useState, useEffect, useRef } from 'react'
 import TypingAnimation from './components/TypingAnimation'
 import TypedMessage from './components/TypedMessage'
-import LogoSection from './components/LogoSection'
+import ImessageHeader from './components/ImessageHeader'
 
 export default function Home() {
   const messagesEndRef = useRef(null);
   const messagesContainerRef = useRef(null);
+  const [currentTime, setCurrentTime] = useState('');
+
   // Initialize chat messages with a welcome message from the AI
   const [messages, setMessages] = useState([
     {
@@ -88,6 +90,26 @@ export default function Home() {
     requestAnimationFrame(scrollToBottom);
   }, [messages, isLoading]);
 
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      const hours = now.getHours();
+      const minutes = now.getMinutes().toString().padStart(2, '0');
+      const displayHours = hours % 12 || 12; // Convert 0 to 12 for 12-hour format
+      const period = hours >= 12 ? 'PM' : 'AM';
+      setCurrentTime(`${displayHours}:${minutes} ${period}`);
+    };
+
+    // Update time immediately
+    updateTime();
+
+    // Update time every minute
+    const interval = setInterval(updateTime, 60000);
+
+    // Cleanup interval on unmount
+    return () => clearInterval(interval);
+  }, []);
+
   // Function to handle sending messages and receiving streaming responses
   const sendMessage = async () => {
     if (!message.trim()) return;
@@ -163,27 +185,33 @@ export default function Home() {
       flexDirection="column"
       justifyContent="center"
       alignItems="center"
-      p={2}
+      p={0}
+      sx={{ bgcolor: '#fff' }}
     >
-      <LogoSection />
+      <ImessageHeader />
       {/* Chat window container */}
       <Stack
         direction="column"
-        width={{ xs: '100%', sm: '90%', md: '600px' }}
+        width={{ xs: '100%', sm: '90%', md: '400px' }}
         height={{ xs: '100%', sm: '700px' }}
-        border="1px solid black"
-        borderRadius={2}
-        padding={2}
-        spacing={3}
+        borderRadius={3}
+        boxShadow={2}
+        bgcolor="#fff"
+        padding={0}
+        spacing={0}
+        sx={{ position: 'relative', overflow: 'hidden' }}
       >
         {/* Messages display area with scrolling */}
         <Stack
           ref={messagesContainerRef}
           direction="column"
-          spacing={2}
+          spacing={0.5}
           flexGrow={1}
           overflow="auto"
           maxHeight="100%"
+          px={1.5}
+          pt={2}
+          pb={1}
           sx={{
             '&::-webkit-scrollbar': {
               width: '8px',
@@ -199,62 +227,137 @@ export default function Home() {
             '&::-webkit-scrollbar-thumb:hover': {
               background: '#555',
             },
+            bgcolor: '#fff',
           }}
         >
           {/* Render each message with different styling based on sender */}
           {messages.map((message, index) => (
-            <Box
-              key={index}
-              display="flex"
-              justifyContent={message.role === 'assistant' ? 'flex-start' : 'flex-end'}
-            >
-              <Box
-                bgcolor={message.role === 'assistant' ? '#E9E9EB' : '#458AF7'}
-                color={message.role === 'assistant' ? 'black' : 'white'}
-                borderRadius={16}
-                padding={{ xs: 2, sm: 3 }}
-                maxWidth={{ xs: '85%', sm: '70%' }}
-              >
-                {message.role === 'assistant' ? (
-                  <TypedMessage
-                    message={message.content}
-                    onComplete={() => {
-                      if (index === messages.length - 1) {
-                        setIsLoading(false);
-                      }
+            message.role === 'assistant' ? (
+              <Box key={index} display="flex" alignItems="flex-end" mb={1}>
+                <Avatar
+                  src="/sahabi.png"
+                  alt="Sahabi Logo"
+                  sx={{
+                    width: 32,
+                    height: 32,
+                    mr: 1,
+                    p: 0.8,
+                    bgcolor: 'white'
+                  }}
+                />
+                <Box>
+                  {/* Name and timestamp */}
+                  <Typography sx={{ fontSize: 11, color: '#888', ml: 0.5, mb: 0.2 }}>Sahabi · {currentTime}</Typography>
+                  <Box
+                    sx={{
+                      bgcolor: '#E9E9EB',
+                      color: 'black',
+                      borderRadius: '18px 18px 18px 4px',
+                      px: 2,
+                      py: 1,
+                      maxWidth: { xs: '85vw', sm: '70%' },
+                      fontSize: 15,
+                      boxShadow: 1,
+                      position: 'relative',
+                      '&:after': {
+                        content: '""',
+                        position: 'absolute',
+                        left: -8,
+                        bottom: 0,
+                        width: 12,
+                        height: 16,
+                        background: 'radial-gradient(circle at 0 100%, #E9E9EB 70%, transparent 70%)',
+                        zIndex: 0,
+                      },
                     }}
-                    onUpdate={() => {
-                      if (messagesContainerRef.current) {
-                        const container = messagesContainerRef.current;
-                        const scrollHeight = container.scrollHeight;
-                        const height = container.clientHeight;
-                        const maxScrollTop = scrollHeight - height;
-                        container.scrollTop = maxScrollTop > 0 ? maxScrollTop : 0;
-                      }
-                    }}
-                  />
-                ) : (
-                  message.content
-                )}
+                  >
+                    <TypedMessage
+                      message={message.content}
+                      onComplete={() => {
+                        if (index === messages.length - 1) {
+                          setIsLoading(false);
+                        }
+                      }}
+                      onUpdate={() => {
+                        if (messagesContainerRef.current) {
+                          const container = messagesContainerRef.current;
+                          const scrollHeight = container.scrollHeight;
+                          const height = container.clientHeight;
+                          const maxScrollTop = scrollHeight - height;
+                          container.scrollTop = maxScrollTop > 0 ? maxScrollTop : 0;
+                        }
+                      }}
+                    />
+                  </Box>
+                </Box>
               </Box>
-            </Box>
+            ) : (
+              <Box key={index} display="flex" justifyContent="flex-end" mb={1}>
+                <Box
+                  sx={{
+                    bgcolor: '#458AF7',
+                    color: 'white',
+                    borderRadius: '18px 18px 4px 18px',
+                    px: 2,
+                    py: 1,
+                    maxWidth: { xs: '85vw', sm: '70%' },
+                    fontSize: 15,
+                    boxShadow: 1,
+                    position: 'relative',
+                    '&:after': {
+                      content: '""',
+                      position: 'absolute',
+                      right: -8,
+                      bottom: 0,
+                      width: 12,
+                      height: 16,
+                      background: 'radial-gradient(circle at 100% 100%, #458AF7 70%, transparent 70%)',
+                      zIndex: 0,
+                    },
+                  }}
+                >
+                  {message.content}
+                </Box>
+              </Box>
+            )
           ))}
           {/* Show typing animation when loading */}
           {isLoading && (
-            <Box
-              display="flex"
-              justifyContent="flex-start"
-            >
+            <Box display="flex" alignItems="flex-end" mb={1}>
+              <Avatar
+                src="/sahabi.png"
+                alt="Sahabi Logo"
+                sx={{
+                  width: 32,
+                  height: 32,
+                  mr: 1,
+                  p: 0.8,
+                  bgcolor: 'white'
+                }}
+              />
               <Box
                 bgcolor="#E9E9EB"
-                borderRadius={16}
+                borderRadius="18px 18px 18px 4px"
                 sx={{
                   minWidth: 60,
                   minHeight: 35,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  padding: { xs: 1, sm: 2 },
+                  px: 2,
+                  py: 1,
+                  boxShadow: 1,
+                  position: 'relative',
+                  '&:after': {
+                    content: '""',
+                    position: 'absolute',
+                    left: -8,
+                    bottom: 0,
+                    width: 12,
+                    height: 16,
+                    background: 'radial-gradient(circle at 0 100%, #E9E9EB 70%, transparent 70%)',
+                    zIndex: 0,
+                  },
                 }}
               >
                 <TypingAnimation />
@@ -262,9 +365,8 @@ export default function Home() {
             </Box>
           )}
         </Stack>
-
         {/* Input area */}
-        <Stack direction="row" spacing={1}>
+        <Stack direction="row" spacing={1} px={2} py={1} bgcolor="#fff">
           <TextField
             fullWidth
             variant="outlined"
@@ -280,6 +382,7 @@ export default function Home() {
             multiline
             maxRows={4}
             InputProps={{
+              sx: { borderRadius: 8, bgcolor: '#f7f7f7' },
               endAdornment: (
                 <InputAdornment position="end">
                   <IconButton
