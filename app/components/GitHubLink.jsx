@@ -12,16 +12,16 @@ const GitHubLink = () => {
             rel="noopener noreferrer"
             sx={{
                 position: 'fixed',
-                bottom: 16,
-                right: 16,
+                top: 60,
+                right: 10,
                 bgcolor: '#24292e', // GitHub color
                 '&:hover': {
                     bgcolor: '#2f363d', // Slightly change color to lighter on hover
                 },
                 display: { xs: 'none', sm: 'flex' }, // Hide on mobile, show on small screens and up
             }}
-            size="large"
-            aria-label="View source on GitHub"
+            size="small"
+            aria-label="View repository on GitHub"
         >
             <GitHubIcon sx={{ color: 'white' }} />
         </Fab>

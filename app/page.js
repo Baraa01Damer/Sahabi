@@ -180,20 +180,28 @@ export default function Home() {
     // Main container for the chat interface
     <Box
       width="100%"
-      height="100vh"
+      height="100dvh"
       display="flex"
       flexDirection="column"
       justifyContent="center"
       alignItems="center"
       p={0}
-      sx={{ bgcolor: '#fff' }}
+      sx={{ 
+        bgcolor: '#fff',
+        overflow: 'hidden',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0
+      }}
     >
       <ImessageHeader />
       {/* Chat window container */}
       <Stack
         direction="column"
-        width={{ xs: '100%', sm: '90%', md: '400px' }}
-        height={{ xs: '100%', sm: '700px' }}
+        width="100%"
+        height="100%"
         borderRadius={3}
         boxShadow={2}
         bgcolor="#fff"
@@ -234,20 +242,9 @@ export default function Home() {
           {messages.map((message, index) => (
             message.role === 'assistant' ? (
               <Box key={index} display="flex" alignItems="flex-end" mb={1}>
-                <Avatar
-                  src="/sahabi.png"
-                  alt="Sahabi Logo"
-                  sx={{
-                    width: 32,
-                    height: 32,
-                    mr: 1,
-                    p: 0.8,
-                    bgcolor: 'white'
-                  }}
-                />
                 <Box>
                   {/* Name and timestamp */}
-                  <Typography sx={{ fontSize: 11, color: '#888', ml: 0.5, mb: 0.2 }}>Sahabi · {currentTime}</Typography>
+                  <Typography sx={{ fontSize: 11, color: '#888', ml: 0.5, mb: 0.2 }}>{/*Sahabi ·*/} {currentTime}</Typography>
                   <Box
                     sx={{
                       bgcolor: '#E9E9EB',
@@ -255,19 +252,31 @@ export default function Home() {
                       borderRadius: '18px 18px 18px 4px',
                       px: 2,
                       py: 1,
-                      maxWidth: { xs: '85vw', sm: '70%' },
+                      maxWidth: '85vw',
                       fontSize: 15,
                       boxShadow: 1,
                       position: 'relative',
+                      '&:before': {
+                        content: '""',
+                        position: 'absolute',
+                        left: -6,
+                        bottom: 0,
+                        width: 20,
+                        height: 20,
+                        background: '#E9E9EB',
+                        borderBottomRightRadius: '50%',
+                        zIndex: 0,
+                      },
                       '&:after': {
                         content: '""',
                         position: 'absolute',
-                        left: -8,
+                        left: -20,
                         bottom: 0,
-                        width: 12,
-                        height: 16,
-                        background: 'radial-gradient(circle at 0 100%, #E9E9EB 70%, transparent 70%)',
-                        zIndex: 0,
+                        width: 20,
+                        height: 20,
+                        background: '#fff',
+                        borderBottomRightRadius: '50%',
+                        zIndex: 1,
                       },
                     }}
                   >
@@ -300,19 +309,31 @@ export default function Home() {
                     borderRadius: '18px 18px 4px 18px',
                     px: 2,
                     py: 1,
-                    maxWidth: { xs: '85vw', sm: '70%' },
+                    maxWidth: '85vw',
                     fontSize: 15,
                     boxShadow: 1,
                     position: 'relative',
+                    '&:before': {
+                      content: '""',
+                      position: 'absolute',
+                      right: -6,
+                      bottom: 0,
+                      width: 20,
+                      height: 20,
+                      background: '#458AF7',
+                      borderBottomLeftRadius: '50%',
+                      zIndex: 0,
+                    },
                     '&:after': {
                       content: '""',
                       position: 'absolute',
-                      right: -8,
+                      right: -20,
                       bottom: 0,
-                      width: 12,
-                      height: 16,
-                      background: 'radial-gradient(circle at 100% 100%, #458AF7 70%, transparent 70%)',
-                      zIndex: 0,
+                      width: 20,
+                      height: 20,
+                      background: '#fff',
+                      borderBottomLeftRadius: '50%',
+                      zIndex: 1,
                     },
                   }}
                 >
@@ -324,17 +345,6 @@ export default function Home() {
           {/* Show typing animation when loading */}
           {isLoading && (
             <Box display="flex" alignItems="flex-end" mb={1}>
-              <Avatar
-                src="/sahabi.png"
-                alt="Sahabi Logo"
-                sx={{
-                  width: 32,
-                  height: 32,
-                  mr: 1,
-                  p: 0.8,
-                  bgcolor: 'white'
-                }}
-              />
               <Box
                 bgcolor="#E9E9EB"
                 borderRadius="18px 18px 18px 4px"
@@ -348,15 +358,27 @@ export default function Home() {
                   py: 1,
                   boxShadow: 1,
                   position: 'relative',
+                  '&:before': {
+                    content: '""',
+                    position: 'absolute',
+                    left: -6,
+                    bottom: 0,
+                    width: 20,
+                    height: 20,
+                    background: '#E9E9EB',
+                    borderBottomRightRadius: '50%',
+                    zIndex: 0,
+                  },
                   '&:after': {
                     content: '""',
                     position: 'absolute',
-                    left: -8,
+                    left: -20,
                     bottom: 0,
-                    width: 12,
-                    height: 16,
-                    background: 'radial-gradient(circle at 0 100%, #E9E9EB 70%, transparent 70%)',
-                    zIndex: 0,
+                    width: 20,
+                    height: 20,
+                    background: '#fff',
+                    borderBottomRightRadius: '50%',
+                    zIndex: 1,
                   },
                 }}
               >
