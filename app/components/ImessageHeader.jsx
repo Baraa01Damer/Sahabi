@@ -2,6 +2,7 @@ import { Box, Typography, IconButton, Avatar } from '@mui/material';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { useState, useEffect } from 'react';
+import { IoIosBatteryFull } from "react-icons/io";
 
 export default function iMessageHeader() {
     const [currentTime, setCurrentTime] = useState('');
@@ -31,11 +32,7 @@ export default function iMessageHeader() {
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2, pt: 1, fontSize: 14, color: '#222' }}>
                 <span style={{ fontWeight: 500 }}>{currentTime}</span>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Box component="span" sx={{ width: 30, height: 12, border: '1.5px solid #222', borderRadius: 2, display: 'inline-flex', position: 'relative', mr: 0.5, alignItems: 'center', justifyContent: 'center' }}>
-                        <Box sx={{ width: '100%', height: '100%', bgcolor: '#222', borderRadius: 1, position: 'absolute', left: 0, top: 0 }} />
-                        <Typography sx={{ color: '#fff', fontSize: '8px', zIndex: 1, fontWeight: 'bold' }}>100</Typography>
-                    </Box>
-                    <Box component="span" sx={{ width: 12, height: 12, border: '1.5px solid #222', borderRadius: '50%', display: 'inline-block', ml: 0.5 }} />
+                    <IoIosBatteryFull size={30} />
                 </Box>
             </Box>
             {/* Header */}
