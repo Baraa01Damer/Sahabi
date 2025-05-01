@@ -7,13 +7,15 @@ import { useState, useEffect, useRef } from 'react'
 import TypingAnimation from './components/TypingAnimation'
 import TypedMessage from './components/TypedMessage'
 import ImessageHeader from './components/ImessageHeader'
+import { IoIosAddCircleOutline } from "react-icons/io";
 
 export default function Home() {
   const messagesEndRef = useRef(null);
   const messagesContainerRef = useRef(null);
+  const fileInputRef = useRef(null);
   const [currentTime, setCurrentTime] = useState('');
 
-  // Initialize chat messages with a welcome message from the AI
+  // Welcome message
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
@@ -110,6 +112,78 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
+  const handleImageClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleImageUpload = async (event) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    const imageUrls = Array.from(files).map(file => URL.createObjectURL(file));
+
+    try {
+      setIsLoading(true);
+      const formData = new FormData();
+      for (let i = 0; i < files.length; i++) {
+        formData.append('images', files[i]);
+      }
+
+      // Add message with images
+      setMessages((messages) => [
+        ...messages,
+        {
+          role: 'user',
+          images: imageUrls
+        }
+      ]);
+
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        body: formData,
+      });
+
+      // Handle response similar to text messages
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+
+      setMessages((messages) => [
+        ...messages,
+        { role: 'assistant', content: '' }
+      ]);
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const text = decoder.decode(value, { stream: true });
+        setMessages((messages) => {
+          let lastMessage = messages[messages.length - 1];
+          let otherMessages = messages.slice(0, messages.length - 1);
+          return [
+            ...otherMessages,
+            {
+              ...lastMessage,
+              content: lastMessage.content + text,
+            },
+          ];
+        });
+      }
+    } catch (error) {
+      console.error('Error uploading images:', error);
+      setMessages((messages) => [
+        ...messages,
+        { role: 'assistant', content: 'Sorry, I encountered an error processing the images. Please try again.' }
+      ]);
+    } finally {
+      setIsLoading(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
   // Function to handle sending messages and receiving streaming responses
   const sendMessage = async () => {
     if (!message.trim()) return;
@@ -186,7 +260,7 @@ export default function Home() {
       justifyContent="center"
       alignItems="center"
       p={0}
-      sx={{ 
+      sx={{
         bgcolor: '#fff',
         overflow: 'hidden',
         position: 'fixed',
@@ -338,6 +412,25 @@ export default function Home() {
                   }}
                 >
                   {message.content}
+                  {message.images && (
+                    <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      {message.images.map((imageUrl, imgIndex) => (
+                        <Box
+                          key={imgIndex}
+                          component="img"
+                          src={imageUrl}
+                          alt={`Uploaded image ${imgIndex + 1}`}
+                          sx={{
+                            maxWidth: '100%',
+                            height: 'auto',
+                            borderRadius: 2,
+                            maxHeight: '200px',
+                            objectFit: 'contain'
+                          }}
+                        />
+                      ))}
+                    </Box>
+                  )}
                 </Box>
               </Box>
             )
@@ -389,10 +482,24 @@ export default function Home() {
         </Stack>
         {/* Input area */}
         <Stack direction="row" spacing={1} px={2} py={1} bgcolor="#fff">
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleImageUpload}
+            accept="image/*"
+            multiple
+            style={{ display: 'none' }}
+          />
+          <IconButton
+            onClick={handleImageClick}
+            sx={{ alignSelf: 'center', mb: 1 }}
+          >
+            <IoIosAddCircleOutline size={30} />
+          </IconButton>
           <TextField
             fullWidth
             variant="outlined"
-            placeholder="Type your message..."
+            placeholder="Message"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyPress={(e) => {
